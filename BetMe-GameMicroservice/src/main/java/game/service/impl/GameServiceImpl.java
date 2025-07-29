@@ -38,20 +38,21 @@ public class GameServiceImpl implements GameService {
                 currentGame.setGameStatus("ongoing");
                 currentGame.setCreatedDateAndTime(now);
                 currentGame.setGameState(GameState.ONGOING);
+                currentGame.setGameResult(-1);
+                currentGame=gameRepository.save(currentGame);
                 stateStartTime = now;
                 currentState = GameState.ONGOING;
+
                 break;
 
             case ONGOING:
                 if (stateStartTime.plusSeconds(30).isBefore(now)) {
-                    System.out.println("Game finished. Starting break.");
+
                     currentGame.setGameStatus("finished");
                     currentGame.setFinishedDateAndTime(now);
                     currentGame.setGameResult(random.nextBoolean() ? 1 : 0);
                     currentGame.setGameState(GameState.BREAK_TIME);
                     recentlyFinishedGame = gameRepository.save(currentGame);
-                    System.out.println(recentlyFinishedGame);
-                    currentGame = null;
                     stateStartTime = now;
                     currentState = GameState.BREAK_TIME;
                 }
@@ -59,11 +60,8 @@ public class GameServiceImpl implements GameService {
 
             case BREAK_TIME:
                 if (stateStartTime.plusSeconds(10).isBefore(now)) {
-                    System.out.println("Break over. Ready for next game.");
                     currentState = GameState.WAITING;
                     stateStartTime = now;
-                } else if (recentlyFinishedGame != null) {
-                    System.out.println("Showing results... Game result: " + recentlyFinishedGame.getGameResult());
                 }
                 break;
         }
@@ -74,6 +72,11 @@ public class GameServiceImpl implements GameService {
         if(currentGame!=null) {
             return currentGame;
         }
+        return null;
+    }
+
+    @Override
+    public GameState cyrrentState() {
         return null;
     }
 }
